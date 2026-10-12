@@ -1,0 +1,15 @@
+﻿penv/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+*.mp4
+*.pptx
+*.gguf
+*.safetensors
+models/
+outputs/

@@ -1,0 +1,6 @@
+# Optional: install only if your PC has enough RAM/storage; GPU is strongly recommended.
+torch
+diffusers>=0.30
+transformers>=4.40
+accelerate>=0.30
+safetensors
