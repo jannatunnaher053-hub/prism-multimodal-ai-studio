@@ -7,18 +7,124 @@ from pathlib import Path
 
 import requests
 
+
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 
+
+def get_gemini_key():
+    key = os.getenv("GEMINI_API_KEY", "").strip()
+
+    if not key:
+        try:
+            import streamlit as st
+            key = str(st.secrets.get("GEMINI_API_KEY", "")).strip()
+        except Exception:
+            pass
+
+    return key
+
+
+def gemini_generate(prompt, image_bytes=None):
+    key = get_gemini_key()
+
+    if not key:
+        return (
+            "Gemini API key পাওয়া যায়নি। "
+            "Streamlit Cloud → App settings → Secrets-এ "
+            "GEMINI_API_KEY যোগ করো।"
+        )
+
+    model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    parts = [{"text": prompt}]
+
+    if image_bytes:
+        from PIL import Image
+
+        image = Image.open(io.BytesIO(image_bytes))
+        image_format = (image.format or "JPEG").upper()
+        mime_type = {
+            "JPEG": "image/jpeg",
+            "JPG": "image/jpeg",
+            "PNG": "image/png",
+            "WEBP": "image/webp",
+            "GIF": "image/gif",
+        }.get(image_format)
+
+        if not mime_type:
+            return "এই ছবির ফরম্যাট সমর্থিত নয়। PNG, JPEG বা WEBP ব্যবহার করো।"
+
+        parts.append({
+            "inline_data": {
+                "mime_type": mime_type,
+                "data": base64.b64encode(image_bytes).decode("utf-8"),
+            }
+        })
+
+    url = (
+        "https://generativelanguage.googleapis.com/"
+        f"v1beta/models/{model}:generateContent"
+    )
+
+    try:
+        response = requests.post(
+            url,
+            headers={
+                "x-goog-api-key": key,
+                "Content-Type": "application/json",
+            },
+            json={"contents": [{"parts": parts}]},
+            timeout=120,
+        )
+
+        if not response.ok:
+            return (
+                f"Gemini API error ({response.status_code}): "
+                f"{response.text[:1000]}"
+            )
+
+        data = response.json()
+        candidates = data.get("candidates", [])
+
+        if not candidates:
+            return "Gemini কোনো উত্তর দেয়নি। অন্য একটি prompt দিয়ে চেষ্টা করো।"
+
+        answer_parts = candidates[0].get("content", {}).get("parts", [])
+        answer = "\n".join(
+            part.get("text", "")
+            for part in answer_parts
+            if part.get("text")
+        ).strip()
+
+        return answer or "Gemini একটি খালি উত্তর দিয়েছে।"
+
+    except requests.RequestException as exc:
+        return f"Gemini API-তে সংযোগ করা যায়নি: {exc}"
+    except Exception as exc:
+        return f"উত্তর তৈরি করতে সমস্যা হয়েছে: {exc}"
+
+
 def ollama_status():
+    if get_gemini_key():
+        return "Gemini API configured. Cloud AI is ready to test."
+
     try:
         r = requests.get(f"{OLLAMA_URL}/api/tags", timeout=2)
         r.raise_for_status()
         names = [m.get("name", "") for m in r.json().get("models", [])]
-        return "Connected to Ollama. Models: " + (", ".join(names) if names else "none pulled yet")
+        return "Connected to Ollama. Models: " + (
+            ", ".join(names) if names else "none pulled yet"
+        )
     except Exception:
-        return "Ollama not detected. Install/start Ollama, then pull a model."
+        return (
+            "Gemini API key not configured and Ollama not detected. "
+            "Configure GEMINI_API_KEY in Streamlit Cloud Secrets."
+        )
+
 
 def ollama_chat(model, prompt):
+    if get_gemini_key():
+        return gemini_generate(prompt)
+
     try:
         r = requests.post(
             f"{OLLAMA_URL}/api/generate",
@@ -26,31 +132,42 @@ def ollama_chat(model, prompt):
             timeout=300,
         )
         r.raise_for_status()
-        return r.json().get("response", "").strip() or "The model returned an empty response."
+        return r.json().get("response", "").strip() or (
+            "The model returned an empty response."
+        )
     except requests.exceptions.ConnectionError:
-        return "Cannot connect to Ollama. Install it from https://ollama.com, make sure it is running, then run `ollama pull qwen2.5:3b`."
+        return (
+            "Cannot connect to Ollama. Configure GEMINI_API_KEY in "
+            "Streamlit Cloud Secrets to use cloud AI."
+        )
     except requests.exceptions.HTTPError as e:
-        detail = ""
-        try:
-            detail = r.text
-        except Exception:
-            pass
-        return f"Ollama request failed ({e}). Check that model `{model}` is installed with `ollama pull {model}`. {detail}"
+        return f"Ollama request failed: {e}"
+
 
 def image_question(model, prompt, image_bytes):
+    if get_gemini_key():
+        return gemini_generate(prompt, image_bytes=image_bytes)
+
     encoded = base64.b64encode(image_bytes).decode("utf-8")
+
     try:
         r = requests.post(
             f"{OLLAMA_URL}/api/generate",
-            json={"model": model, "prompt": prompt, "images": [encoded], "stream": False},
+            json={
+                "model": model,
+                "prompt": prompt,
+                "images": [encoded],
+                "stream": False,
+            },
             timeout=300,
         )
         r.raise_for_status()
         return r.json().get("response", "").strip()
     except requests.exceptions.ConnectionError:
-        return "Cannot connect to Ollama. Start Ollama and pull a vision model, for example `ollama pull qwen2.5vl:3b`."
+        return "Cannot connect to Ollama. Configure Gemini API for cloud use."
     except requests.exceptions.HTTPError as e:
-        return f"Vision model request failed: {e}. Ensure `{model}` is a vision-capable model and has been pulled."
+        return f"Vision model request failed: {e}"
+
 
 def extract_document_text(filename, data):
     ext = Path(filename).suffix.lower()
