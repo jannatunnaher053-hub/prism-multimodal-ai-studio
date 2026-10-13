@@ -18,3 +18,5 @@ penv/
 prism_data/
 *.backup
 app_sidebar_candidate.py
+
+*.voice-backup*
