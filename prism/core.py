@@ -34,7 +34,7 @@ def gemini_generate(prompt, image_bytes=None):
             "GEMINI_API_KEY যোগ করো।"
         )
 
-    model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    model = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
     parts = [{"text": prompt}]
 
     if image_bytes:
