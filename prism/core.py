@@ -38,27 +38,30 @@ def gemini_generate(prompt, image_bytes=None):
     parts = [{"text": prompt}]
 
     if image_bytes:
-        from PIL import Image
+        from PIL import Image, ImageOps
 
-        image = Image.open(io.BytesIO(image_bytes))
-        image_format = (image.format or "JPEG").upper()
-        mime_type = {
-            "JPEG": "image/jpeg",
-            "JPG": "image/jpeg",
-            "PNG": "image/png",
-            "WEBP": "image/webp",
-            "GIF": "image/gif",
-        }.get(image_format)
+        try:
+            image = Image.open(io.BytesIO(image_bytes))
+            image = ImageOps.exif_transpose(image)
+            image.thumbnail((1024, 1024))
 
-        if not mime_type:
-            return "এই ছবির ফরম্যাট সমর্থিত নয়। PNG, JPEG বা WEBP ব্যবহার করো।"
+            if image.mode != "RGB":
+                image = image.convert("RGB")
 
-        parts.append({
-            "inline_data": {
-                "mime_type": mime_type,
-                "data": base64.b64encode(image_bytes).decode("utf-8"),
-            }
-        })
+            buffer = io.BytesIO()
+            image.save(buffer, format="JPEG", quality=80, optimize=True)
+            compressed_bytes = buffer.getvalue()
+
+            parts.append({
+                "inline_data": {
+                    "mime_type": "image/jpeg",
+                    "data": base64.b64encode(compressed_bytes).decode("utf-8"),
+                }
+            })
+
+        except Exception as exc:
+            return f"Image processing failed: {exc}"
+
 
     url = (
         "https://generativelanguage.googleapis.com/"
