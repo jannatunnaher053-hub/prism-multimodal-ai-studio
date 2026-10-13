@@ -7,6 +7,18 @@ from google import genai
 
 load_dotenv(dotenv_path=Path(__file__).with_name(".env"))
 
+def get_gemini_api_key():
+    api_key = os.getenv("GEMINI_API_KEY")
+    if api_key:
+        return api_key
+
+    try:
+        return st.secrets["GEMINI_API_KEY"]
+    except Exception:
+        return None
+
+
+
 from prism.core import (
     ollama_chat, extract_document_text, image_question,
     create_presentation, create_storyboard_video, generate_image_local,
@@ -105,7 +117,7 @@ if selected_page == "💬 Chat":
             with st.spinner("Thinking..."):
                 try:
                     if provider == "Gemini API":
-                        api_key = os.getenv("GEMINI_API_KEY")
+                        api_key = get_gemini_api_key()
                         if not api_key:
                             raise ValueError(
                                 "GEMINI_API_KEY পাওয়া যায়নি। .env ফাইল পরীক্ষা করো।"
@@ -198,7 +210,7 @@ QUESTION:
                 with st.spinner("Analyzing document..."):
                     try:
                         if provider == "Gemini API":
-                            api_key = os.getenv("GEMINI_API_KEY")
+                            api_key = get_gemini_api_key()
                             if not api_key:
                                 raise ValueError(
                                     "GEMINI_API_KEY পাওয়া যায়নি। .env পরীক্ষা করো।"
@@ -261,46 +273,65 @@ elif selected_page == "🖼️ Understand image":
                 except Exception as e:
                     st.error(str(e))
 
+
 elif selected_page == "🎙️ Voice":
     st.subheader("🎙️ Voice Assistant")
-    st.info("Upload an audio recording to transcribe it locally.")
-    audio = st.file_uploader(
-        "Audio file (WAV/MP3/M4A/OGG)",
+    st.info("Record your voice or upload an audio file.")
+
+    # Record directly from the browser microphone.
+    recorded_audio = st.audio_input("Record your voice", key="voice_recording")
+
+    uploaded_audio = st.file_uploader(
+        "Or upload audio (WAV/MP3/M4A/OGG)",
         type=["wav", "mp3", "m4a", "ogg"],
         key="audio",
     )
+
+    audio = recorded_audio if recorded_audio is not None else uploaded_audio
+
     whisper_model = st.selectbox(
-        "Speech model", ["base", "small", "medium"], index=0
+        "Speech model",
+        ["base", "small", "medium"],
+        index=0,
     )
 
-    if audio and st.button("Transcribe audio"):
-        with st.spinner("Transcribing audio..."):
-            try:
-                transcript = transcribe_audio_local(
-                    audio.getvalue(), audio.name, whisper_model
-                )
-                st.session_state["voice_transcript"] = transcript
-            except Exception as e:
-                st.error(str(e))
+    if audio is not None:
+        st.audio(audio)
+
+        if st.button("Transcribe audio", key="transcribe_voice"):
+            with st.spinner("Transcribing audio..."):
+                try:
+                    transcript = transcribe_audio_local(
+                        audio.getvalue(),
+                        getattr(audio, "name", "recording.wav"),
+                        whisper_model,
+                    )
+                    st.session_state["voice_transcript"] = transcript
+                    st.success("Transcription complete.")
+                except Exception as e:
+                    st.error(f"Transcription failed: {e}")
 
     transcript = st.text_area(
         "Transcript / text to answer",
         value=st.session_state.get("voice_transcript", ""),
         height=120,
+        key="voice_transcript_editor",
     )
 
-    if st.button("Ask Prism and speak"):
+    if st.button("Ask Prism and speak", key="ask_prism_voice"):
         if transcript.strip():
             with st.spinner("Generating response..."):
                 try:
                     answer = ollama_chat("qwen2.5:3b", transcript)
-                    st.markdown(answer)
+                    st.markdown("### Prism's response")
+                    st.write(answer)
+
                     audio_path = speak_text_local(answer)
                     st.audio(audio_path)
                 except Exception as e:
-                    st.error(str(e))
+                    st.error(f"Voice response failed: {e}")
         else:
-            st.warning("আগে text লিখো অথবা audio transcribe করো।")
+            st.warning("Please record audio or enter text first.")
 
 elif selected_page == "🎨 Generate image":
     st.subheader("🎨 Image Studio")
