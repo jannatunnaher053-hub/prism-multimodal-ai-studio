@@ -13,3 +13,8 @@ __pycache__/
 *.safetensors
 models/
 outputs/
+penv/
+*.py[cod]
+prism_data/
+*.backup
+app_sidebar_candidate.py
