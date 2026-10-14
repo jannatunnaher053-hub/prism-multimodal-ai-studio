@@ -355,10 +355,12 @@ QUESTION:
                                 )
                             client = genai.Client(api_key=api_key)
                            
-response = client.models.generate_content(
-    model=model, contents=prompt
-)
-answer = response.text or "No text returned."
+
+                            response = client.models.generate_content(
+                                model=model, contents=prompt
+                            )
+                            answer = response.text or "No text returned."
+
                         else:
                             answer = ollama_chat(model, prompt)
 
