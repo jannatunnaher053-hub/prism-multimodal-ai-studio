@@ -213,10 +213,13 @@ elif selected_page == "💬 Chat":
     )
 
     if provider == "Gemini API":
-        model = st.text_input(
-            "Gemini model",
-            value="gemini-3.6-flash",
-            key="gemini_chat_model",
+       
+model = st.text_input(
+    "Gemini model",
+    value="gemini-3.5-flash-lite",
+    key="gemini_chat_model",
+)
+
         )
     else:
         model = st.text_input(
