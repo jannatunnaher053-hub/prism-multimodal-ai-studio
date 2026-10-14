@@ -355,31 +355,10 @@ QUESTION:
                                 )
                             client = genai.Client(api_key=api_key)
                            
-import time
-
-answer = None
-last_error = None
-
-for attempt in range(3):
-    try:
-        response = client.models.generate_content(
-            model=model,
-            contents=prompt
-        )
-        answer = response.text or "No text returned."
-        break
-    except Exception as e:
-        last_error = e
-        if "503" in str(e) and attempt < 2:
-            time.sleep(2 ** (attempt + 1))
-        else:
-            break
-
-if answer is None:
-    st.error(f"Gemini Chat failed: {last_error}")
-    st.info("কিছুক্ষণ পরে আবার চেষ্টা করো।")
-    st.stop()
-
+response = client.models.generate_content(
+    model=model, contents=prompt
+)
+answer = response.text or "No text returned."
                         else:
                             answer = ollama_chat(model, prompt)
 
