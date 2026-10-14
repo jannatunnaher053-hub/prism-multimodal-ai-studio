@@ -27,6 +27,21 @@ from prism.core import (
 
 st.set_page_config(page_title="Prism Multimodal AI Studio", page_icon="🔮", layout="wide")
 st.title("🔮 Prism Multimodal AI Studio")
+
+st.markdown("""
+<style>
+.stApp {
+    background: linear-gradient(135deg, #0b1020, #20143b);
+}
+[data-testid="stSidebar"] {
+    background-color: #111426;
+}
+h1 {
+    color: #c4b5fd;
+}
+</style>
+""", unsafe_allow_html=True)
+
 st.caption("Local-first multimodal workspace • Ollama + open-source tools")
 
 
