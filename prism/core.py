@@ -147,7 +147,11 @@ def ollama_chat(model, prompt):
         return f"Ollama request failed: {e}"
 
 
+
 def image_question(model, prompt, image_bytes):
+    if get_gemini_key():
+        return gemini_generate(prompt, image_bytes=image_bytes)
+
     encoded = base64.b64encode(image_bytes).decode("utf-8")
 
     try:
@@ -165,7 +169,7 @@ def image_question(model, prompt, image_bytes):
         return r.json().get("response", "").strip()
 
     except requests.exceptions.ConnectionError:
-        return "Cannot connect to Ollama. Please ensure Ollama is running."
+        return "Cannot connect to Ollama. Ensure Ollama is running."
 
     except requests.exceptions.HTTPError as e:
         return f"Vision model request failed: {e}"
