@@ -43,7 +43,47 @@ h1 {
 """, unsafe_allow_html=True)
 
 st.caption("Local-first multimodal workspace • Ollama + open-source tools")
+st.markdown("""
+<div style="
+    padding: 30px;
+    border-radius: 20px;
+    background: linear-gradient(120deg, #30205f, #172554);
+    border: 1px solid #6551a8;
+    margin: 20px 0;
+">
+    <h1 style="color:white;">Welcome to Prism ✨</h1>
+    <p style="color:#e0e7ff;font-size:18px;">
+        Your All-in-One Multimodal AI Workspace
+    </p>
+    <p style="color:#c4b5fd;">
+        Chat • Documents • Images • Slides • Video
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
+st.subheader("🚀 Explore Your AI Tools")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.info("💬 AI Chat\n\nAsk questions and explore ideas.")
+
+with col2:
+    st.info("📄 Documents\n\nUpload and summarize documents.")
+
+with col3:
+    st.info("🖼️ Image Understanding\n\nAnalyze uploaded images.")
+
+col4, col5, col6 = st.columns(3)
+
+with col4:
+    st.info("🎨 Image Studio\n\nCreate images from text prompts.")
+
+with col5:
+    st.info("📊 Slides Studio\n\nCreate presentations.")
+
+with col6:
+    st.info("🎬 Video Studio\n\nBuild storyboard videos.")
 
 with st.sidebar:
     st.title("✨ Prism AI Studio")
