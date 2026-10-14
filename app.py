@@ -26,6 +26,83 @@ from prism.core import (
 )
 
 st.set_page_config(page_title="Prism Multimodal AI Studio", page_icon="🔮", layout="wide")
+
+st.markdown("""
+<style>
+.stApp {
+    background:
+        radial-gradient(ellipse at top left,
+        rgba(75, 45, 160, 0.22), transparent 45%),
+        radial-gradient(ellipse at bottom right,
+        rgba(0, 190, 220, 0.12), transparent 40%),
+        #080d19;
+    color: #edf4ff;
+}
+
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #10182b, #090e19);
+    border-right: 1px solid rgba(90, 170, 255, 0.18);
+}
+
+h1, h2, h3 {
+    color: #f0f6ff !important;
+    letter-spacing: -0.5px;
+}
+
+h1 {
+    background: linear-gradient(90deg, #a78bfa, #67e8f9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stCaption {
+    color: #9baec9 !important;
+}
+
+.stButton > button {
+    background: linear-gradient(110deg, #713cff, #087fce);
+    color: white;
+    border: 1px solid rgba(130, 190, 255, 0.3);
+    border-radius: 12px;
+    padding: 0.55rem 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.stButton > button:hover {
+    border-color: #67e8f9;
+    box-shadow: 0 0 20px rgba(66, 160, 255, 0.28);
+    transform: translateY(-1px);
+}
+
+input, textarea {
+    border-radius: 10px !important;
+}
+
+[data-testid="stFileUploader"] {
+    background: rgba(20, 32, 54, 0.65);
+    border: 1px dashed rgba(103, 232, 249, 0.4);
+    border-radius: 14px;
+    padding: 10px;
+}
+
+[data-testid="stMetric"] {
+    background: rgba(18, 29, 49, 0.75);
+    border: 1px solid rgba(130, 160, 220, 0.18);
+    border-radius: 14px;
+    padding: 16px;
+}
+
+hr {
+    border-color: rgba(130, 160, 220, 0.18);
+}
+
+#MainMenu, footer {
+    visibility: hidden;
+}
+</style>
+""", unsafe_allow_html=True)
+
 st.title("🔮 Prism Multimodal AI Studio")
 
 st.markdown("""
