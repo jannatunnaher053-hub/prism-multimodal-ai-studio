@@ -138,7 +138,7 @@ elif selected_page == "💬 Chat":
     if provider == "Gemini API":
         model = st.text_input(
             "Gemini model",
-            value="gemini-3.8-flash",
+            value="gemini-3.6-flash",
             key="gemini_chat_model",
         )
     else:
@@ -246,7 +246,7 @@ elif selected_page == "📄 Documents":
             if provider == "Gemini API":
                 model = st.text_input(
                     "Gemini model",
-                    value="gemini-3.8-flash",
+                    value="gemini-3.6-flash",
                     key="document_gemini_model",
                 )
             else:
