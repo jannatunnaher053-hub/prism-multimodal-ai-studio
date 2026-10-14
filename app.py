@@ -246,7 +246,7 @@ elif selected_page == "📄 Documents":
             if provider == "Gemini API":
                 model = st.text_input(
                     "Gemini model",
-                    value="gemini-3.6-flash",
+                    value="gemini-3.5-flash-lite",
                     key="document_gemini_model",
                 )
             else:
